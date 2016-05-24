@@ -58,11 +58,9 @@ public class MainActivity extends AppCompatActivity {
                 public void onResponse(Call call, Response response) {
                     try {
                         String jsonData = response.body().string();
-                        Log.v(TAG, jsonData);
 
                         if (response.isSuccessful()) {
                             mCurrentWeather = getCurrentDetails(jsonData);
-                            Log.d(TAG, "Current Time:" + mCurrentWeather.getFormattedTime());
                         }
                         else {
                             alertUserAboutResponseError();
@@ -79,8 +77,6 @@ public class MainActivity extends AppCompatActivity {
         else {
             alertUserAboutNetworkError();
         }
-
-        Log.d(TAG, "The Main UI code is running!");
     }
 
     private CurrentWeather getCurrentDetails(String jsonData) throws JSONException {
