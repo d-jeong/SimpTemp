@@ -7,6 +7,9 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
 
 import okhttp3.Call;
@@ -18,6 +21,8 @@ import okhttp3.Response;
 public class MainActivity extends AppCompatActivity {
 
     public static final String TAG = MainActivity.class.getSimpleName();
+
+    private CurrentWeather mCurrentWeather;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,18 +55,24 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 @Override
-                public void onResponse(Call call, Response response) throws IOException {
+                public void onResponse(Call call, Response response) {
                     try {
-                        Log.v(TAG, response.body().string());
+                        String jsonData = response.body().string();
+                        Log.v(TAG, jsonData);
 
                         if (response.isSuccessful()) {
+                            mCurrentWeather = getCurrentDetails(jsonData);
+                            Log.d(TAG, "Current Time:" + mCurrentWeather.getFormattedTime());
                         }
                         else {
                             alertUserAboutResponseError();
                         }
-                    } catch (IOException e) {
-                        Log.e(TAG, "Exception caught: ", e);
                     }
+                    catch (IOException ioe) {
+                        Log.e(TAG, "Exception caught: ", ioe);
+                    }
+                    catch (JSONException jsone) {
+                        Log.e(TAG, "Exception caught: ", jsone);                    }
                 }
             });
         }
@@ -70,6 +81,25 @@ public class MainActivity extends AppCompatActivity {
         }
 
         Log.d(TAG, "The Main UI code is running!");
+    }
+
+    private CurrentWeather getCurrentDetails(String jsonData) throws JSONException {
+        JSONObject forecast = new JSONObject(jsonData);
+        String timezone = forecast.getString("timezone");
+
+        JSONObject currently = new JSONObject(forecast.getString("currently"));
+
+        CurrentWeather currentWeather = new CurrentWeather(
+                currently.getString("icon"),
+                currently.getLong("time"),
+                currently.getDouble("temperature"),
+                currently.getDouble("humidity"),
+                currently.getDouble("precipProbability"),
+                currently.getString("summary"),
+                timezone
+        );
+
+        return currentWeather;
     }
 
     private boolean isNetworkAvailable() {
