@@ -1,17 +1,23 @@
 package com.davidjeong.stormy;
 
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.OkHttpClient;
@@ -24,11 +30,18 @@ public class MainActivity extends AppCompatActivity {
 
     private CurrentWeather mCurrentWeather;
 
+    @BindView(R.id.timeLabel) TextView mTimeLabel;
+    @BindView(R.id.temperatureLabel) TextView mTemperatureLabel;
+    @BindView(R.id.humidityValue) TextView mHumidityValue;
+    @BindView(R.id.precipValue) TextView mPrecipValue;
+    @BindView(R.id.summaryLabel) TextView mSummaryLabel;
+    @BindView(R.id.iconImageView) ImageView mIconImageView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        ButterKnife.bind(this);
 
         // create the url that will be used for the http call
         String apiKey = "bf4d36c47381c45990e059d3a65f3a28";
@@ -62,6 +75,13 @@ public class MainActivity extends AppCompatActivity {
 
                         if (response.isSuccessful()) {
                             mCurrentWeather = getCurrentDetails(jsonData);
+
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    updateDisplay();
+                                }
+                            });
                         }
                         else {
                             alertUserAboutResponseError();
@@ -78,6 +98,17 @@ public class MainActivity extends AppCompatActivity {
         else {
             alertUserAboutNetworkError();
         }
+    }
+
+    private void updateDisplay() {
+        mTemperatureLabel.setText(String.valueOf(mCurrentWeather.getTemperature()));
+        mTimeLabel.setText("At " + mCurrentWeather.getFormattedTime());
+        mHumidityValue.setText(String.valueOf(mCurrentWeather.getHumidity()));
+        mPrecipValue.setText(mCurrentWeather.getPrecipitation() + "%");
+        mSummaryLabel.setText(mCurrentWeather.getSummary());
+
+        Drawable drawable = ContextCompat.getDrawable(this, mCurrentWeather.getIconId());
+        mIconImageView.setImageDrawable(drawable);
     }
 
 
