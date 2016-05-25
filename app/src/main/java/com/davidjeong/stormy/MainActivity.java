@@ -8,7 +8,9 @@ import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.View;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import org.json.JSONException;
@@ -36,22 +38,42 @@ public class MainActivity extends AppCompatActivity {
     @BindView(R.id.precipValue) TextView mPrecipValue;
     @BindView(R.id.summaryLabel) TextView mSummaryLabel;
     @BindView(R.id.iconImageView) ImageView mIconImageView;
+    @BindView(R.id.refreshImageView) ImageView mRefreshImageView;
+    @BindView(R.id.progressBar) ProgressBar mProgressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
+        mProgressBar.setVisibility(View.INVISIBLE);
 
+        final double latitude = 37.8267;
+        final double longitude = -122.423;
+
+        mRefreshImageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getForecast(latitude, longitude);
+            }
+        });
+
+        getForecast(latitude, longitude);
+
+
+    }
+
+    private void getForecast(double latitude, double longitude) {
         // create the url that will be used for the http call
         String apiKey = "bf4d36c47381c45990e059d3a65f3a28";
-        double latitude = 37.8267;
-        double longitude = -122.423;
+
         String forecastUrl = "https://api.forecast.io/forecast/" + apiKey +
                 "/" + latitude + "," + longitude;
 
         // check if the network is available before continuing
         if (isNetworkAvailable()) {
+
+            ToggleRefresh();
 
             // set up the client and the call
             OkHttpClient client = new OkHttpClient();
@@ -65,7 +87,13 @@ public class MainActivity extends AppCompatActivity {
             call.enqueue(new Callback() {
                 @Override
                 public void onFailure(Call call, IOException e) {
-
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            ToggleRefresh();
+                        }
+                    });
+                    alertUserAboutResponseError();
                 }
 
                 @Override
@@ -91,12 +119,31 @@ public class MainActivity extends AppCompatActivity {
                         Log.e(TAG, "Exception caught: ", ioe);
                     }
                     catch (JSONException jsone) {
-                        Log.e(TAG, "Exception caught: ", jsone);                    }
+                        Log.e(TAG, "Exception caught: ", jsone);
+                    }
+
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            ToggleRefresh();
+                        }
+                    });
                 }
             });
         }
         else {
             alertUserAboutNetworkError();
+        }
+    }
+
+    private void ToggleRefresh() {
+        if (mProgressBar.getVisibility() == View.INVISIBLE) {
+            mProgressBar.setVisibility(View.VISIBLE);
+            mRefreshImageView.setVisibility(View.INVISIBLE);
+        }
+        else {
+            mProgressBar.setVisibility(View.INVISIBLE);
+            mRefreshImageView.setVisibility(View.VISIBLE);
         }
     }
 
