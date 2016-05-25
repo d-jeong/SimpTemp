@@ -24,6 +24,7 @@ public class MainActivity extends AppCompatActivity {
 
     private CurrentWeather mCurrentWeather;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -79,6 +80,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+
     private CurrentWeather getCurrentDetails(String jsonData) throws JSONException {
         JSONObject forecast = new JSONObject(jsonData);
         String timezone = forecast.getString("timezone");
@@ -98,6 +100,7 @@ public class MainActivity extends AppCompatActivity {
         return currentWeather;
     }
 
+
     private boolean isNetworkAvailable() {
         ConnectivityManager manager = (ConnectivityManager)
                 getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -113,6 +116,7 @@ public class MainActivity extends AppCompatActivity {
         return isAvailable;
     }
 
+
     private void alertUserAboutNetworkError() {
         AlertDialogFragment dialog = AlertDialogFragment.newInstance(
                 getString(R.string.error_title),
@@ -121,6 +125,7 @@ public class MainActivity extends AppCompatActivity {
         dialog.show(getFragmentManager(), "error_dialog");
 
     }
+
 
     private void alertUserAboutResponseError() {
         AlertDialogFragment dialog = AlertDialogFragment.newInstance(
