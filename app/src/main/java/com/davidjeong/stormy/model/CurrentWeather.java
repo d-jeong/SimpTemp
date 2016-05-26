@@ -1,4 +1,6 @@
-package com.davidjeong.stormy;
+package com.davidjeong.stormy.model;
+
+import com.davidjeong.stormy.R;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;

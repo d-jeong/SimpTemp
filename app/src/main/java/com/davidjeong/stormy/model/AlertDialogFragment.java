@@ -1,4 +1,4 @@
-package com.davidjeong.stormy;
+package com.davidjeong.stormy.model;
 
 import android.app.AlertDialog;
 import android.app.Dialog;

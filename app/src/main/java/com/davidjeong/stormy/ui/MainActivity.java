@@ -1,7 +1,9 @@
-package com.davidjeong.stormy;
+package com.davidjeong.stormy.ui;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -14,10 +16,18 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.davidjeong.stormy.R;
+import com.davidjeong.stormy.model.AlertDialogFragment;
+import com.davidjeong.stormy.model.CurrentLocation;
+import com.davidjeong.stormy.model.CurrentWeather;
+import com.davidjeong.stormy.model.LocationProvider;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Locale;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -32,10 +42,8 @@ public class MainActivity extends AppCompatActivity implements LocationProvider.
     public static final String TAG = MainActivity.class.getSimpleName();
 
     private CurrentWeather mCurrentWeather;
+    private CurrentLocation mCurrentLocation;
     private LocationProvider mLocationProvider;
-
-    private String mCity;
-    private String mState;
 
     @BindView(R.id.locationLabel)
     TextView mLocationLabel;
@@ -64,6 +72,7 @@ public class MainActivity extends AppCompatActivity implements LocationProvider.
         mProgressBar.setVisibility(View.INVISIBLE);
 
         mLocationProvider = new LocationProvider(this, this);
+
         getForecast();
 
         mRefreshImageView.setOnClickListener(new View.OnClickListener() {
@@ -78,11 +87,21 @@ public class MainActivity extends AppCompatActivity implements LocationProvider.
         mLocationProvider.connect();
     }
 
-    private void getForecast(double latitude, double longitude) {
+    private void getForecast(double latitude, final double longitude) {
         // create the url that will be used for the http call
         String apiKey = "bf4d36c47381c45990e059d3a65f3a28";
 
-        // TODO: try to get the geocoder to work to get city and state name
+        // use Geocoder to acquire the city and state names (or country if not in US)
+        Geocoder gcd = new Geocoder(this, Locale.getDefault());
+        try {
+            List<Address> addresses = gcd.getFromLocation(latitude, longitude, 1);
+            String city =  addresses.get(0).getLocality();
+            String state = addresses.get(0).getAdminArea();
+            String country = addresses.get(0).getCountryName();
+            mCurrentLocation = new CurrentLocation(latitude, longitude, city, state, country);
+        } catch (IOException e) {
+            Log.e(TAG, "Exception caught: ", e);
+        }
 
         String forecastUrl = "https://api.forecast.io/forecast/" + apiKey +
                 "/" + latitude + "," + longitude;
@@ -130,10 +149,8 @@ public class MainActivity extends AppCompatActivity implements LocationProvider.
                         } else {
                             alertUserAboutResponseError();
                         }
-                    } catch (IOException ioe) {
-                        Log.e(TAG, "Exception caught: ", ioe);
-                    } catch (JSONException jsone) {
-                        Log.e(TAG, "Exception caught: ", jsone);
+                    } catch (IOException | JSONException e) {
+                        Log.e(TAG, "Exception caught: ", e);
                     }
 
                     runOnUiThread(new Runnable() {
@@ -148,6 +165,7 @@ public class MainActivity extends AppCompatActivity implements LocationProvider.
             alertUserAboutNetworkError();
         }
     }
+
 
     private void ToggleRefresh() {
         if (mProgressBar.getVisibility() == View.INVISIBLE) {
@@ -165,7 +183,14 @@ public class MainActivity extends AppCompatActivity implements LocationProvider.
         mHumidityValue.setText(String.valueOf(mCurrentWeather.getHumidity()));
         mPrecipValue.setText(mCurrentWeather.getPrecipitation() + "%");
         mSummaryLabel.setText(mCurrentWeather.getSummary());
-        mLocationLabel.setText(mCity + ", " + mState);
+
+        if (mCurrentLocation.getCountry().equals("United States")) {
+            mLocationLabel.setText(mCurrentLocation.getCity() + ", " + mCurrentLocation.getState());
+        } else {
+            mLocationLabel.setText(mCurrentLocation.getCity() + ", " + mCurrentLocation.getCountry());
+        }
+
+
 
         Drawable drawable = ContextCompat.getDrawable(this, mCurrentWeather.getIconId());
         mIconImageView.setImageDrawable(drawable);
