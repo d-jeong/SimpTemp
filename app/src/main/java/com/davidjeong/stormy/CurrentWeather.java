@@ -14,6 +14,8 @@ public class CurrentWeather {
     private String mTimezone;
 
 
+
+
     public CurrentWeather(String icon, long time, double temperature, double humidity,
                           double precipitation, String summary, String timezone) {
         mIcon = icon;
