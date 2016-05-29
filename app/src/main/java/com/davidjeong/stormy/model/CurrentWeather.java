@@ -16,8 +16,6 @@ public class CurrentWeather {
     private String mTimezone;
 
 
-
-
     public CurrentWeather(String icon, long time, double temperature, double humidity,
                           double precipitation, String summary, String timezone) {
         mIcon = icon;
@@ -70,6 +68,12 @@ public class CurrentWeather {
         return mTime;
     }
 
+    /**
+     * This function uses the UNIX timestamp stored in this object to form a
+     * human-readable time
+     *
+     * @return time string in the form of "h:mm a" (EX: 5:31 PM)
+     */
     public String getFormattedTime() {
         SimpleDateFormat formatter = new SimpleDateFormat("h:mm a");
         formatter.setTimeZone(TimeZone.getTimeZone(mTimezone));

@@ -45,6 +45,7 @@ public class MainActivity extends AppCompatActivity implements LocationProvider.
     private CurrentLocation mCurrentLocation;
     private LocationProvider mLocationProvider;
 
+    // Butter Knife for boiler-plate code
     @BindView(R.id.locationLabel)
     TextView mLocationLabel;
     @BindView(R.id.timeLabel)
@@ -69,8 +70,11 @@ public class MainActivity extends AppCompatActivity implements LocationProvider.
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
+
+        // progress bar should only be visible on refresh
         mProgressBar.setVisibility(View.INVISIBLE);
 
+        // initialize access to GPS (Google's Location Services)
         mLocationProvider = new LocationProvider(this, this);
 
         getForecast();
@@ -84,25 +88,34 @@ public class MainActivity extends AppCompatActivity implements LocationProvider.
     }
 
     private void getForecast() {
+        mLocationProvider.disconnect();
         mLocationProvider.connect();
     }
 
-    private void getForecast(double latitude, final double longitude) {
+
+    /**
+     * This function takes a latitude and longitude coordinate and sets the current weather content
+     * data on the main activity layout. If network is not available, it sends an error message
+     * to the user.
+     *
+     * @param latitude double that represents latitude
+     * @param longitude double that represents longitude
+     * @throws IOException
+     */
+    private void getForecast(double latitude, double longitude) throws IOException {
         // create the url that will be used for the http call
         String apiKey = "bf4d36c47381c45990e059d3a65f3a28";
 
         // use Geocoder to acquire the city and state names (or country if not in US)
         Geocoder gcd = new Geocoder(this, Locale.getDefault());
-        try {
-            List<Address> addresses = gcd.getFromLocation(latitude, longitude, 1);
-            String city =  addresses.get(0).getLocality();
-            String state = addresses.get(0).getAdminArea();
-            String country = addresses.get(0).getCountryName();
-            mCurrentLocation = new CurrentLocation(latitude, longitude, city, state, country);
-        } catch (IOException e) {
-            Log.e(TAG, "Exception caught: ", e);
-        }
 
+        List<Address> addresses = gcd.getFromLocation(latitude, longitude, 1);
+        String city =  addresses.get(0).getLocality();
+        String state = addresses.get(0).getAdminArea();
+        String country = addresses.get(0).getCountryName();
+        mCurrentLocation = new CurrentLocation(latitude, longitude, city, state, country);
+
+        // url to be sent to forecast.io's API
         String forecastUrl = "https://api.forecast.io/forecast/" + apiKey +
                 "/" + latitude + "," + longitude;
 
@@ -116,41 +129,47 @@ public class MainActivity extends AppCompatActivity implements LocationProvider.
             Request request = new Request.Builder()
                     .url(forecastUrl)
                     .build();
-
             Call call = client.newCall(request);
+
 
             // get the data asynchronously to ensure the user can continue to use the app
             call.enqueue(new Callback() {
+
                 @Override
                 public void onFailure(Call call, IOException e) {
+                    // setting the visibility of progress bar is done on the ui thread
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             ToggleRefresh();
                         }
                     });
+
                     alertUserAboutResponseError();
                 }
 
                 @Override
-                public void onResponse(Call call, Response response) {
-                    try {
-                        String jsonData = response.body().string();
+                public void onResponse(Call call, Response response) throws IOException {
+                    String jsonData = response.body().string();
 
-                        if (response.isSuccessful()) {
+                    if (response.isSuccessful()) {
+                        try {
+                            // parses the jsonData returned to store it into the data struct
                             mCurrentWeather = getCurrentDetails(jsonData);
-
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    updateDisplay();
-                                }
-                            });
-                        } else {
-                            alertUserAboutResponseError();
+                        } catch (JSONException e) {
+                            Log.e(TAG, "Error occured: " + e);
+                            e.printStackTrace();
                         }
-                    } catch (IOException | JSONException e) {
-                        Log.e(TAG, "Exception caught: ", e);
+
+                        // ensures that layout update occurs on the ui thread
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                updateDisplay();
+                            }
+                        });
+                    } else {
+                        alertUserAboutResponseError();
                     }
 
                     runOnUiThread(new Runnable() {
@@ -167,6 +186,10 @@ public class MainActivity extends AppCompatActivity implements LocationProvider.
     }
 
 
+    /**
+     * This function toggles the visibility between the progress bar and the
+     * refresh image (button) when called on
+     */
     private void ToggleRefresh() {
         if (mProgressBar.getVisibility() == View.INVISIBLE) {
             mProgressBar.setVisibility(View.VISIBLE);
@@ -177,26 +200,40 @@ public class MainActivity extends AppCompatActivity implements LocationProvider.
         }
     }
 
+
+    /**
+     * This function updates the main activity with the current weather data
+     * that was retrieved through the http call
+     */
     private void updateDisplay() {
         mTemperatureLabel.setText(String.valueOf(mCurrentWeather.getTemperature()));
         mTimeLabel.setText("At " + mCurrentWeather.getFormattedTime());
         mHumidityValue.setText(String.valueOf(mCurrentWeather.getHumidity()));
         mPrecipValue.setText(mCurrentWeather.getPrecipitation() + "%");
-        mSummaryLabel.setText(mCurrentWeather.getSummary());
+        mSummaryLabel.setText("It is currently " + mCurrentWeather.getSummary().toLowerCase());
 
-        if (mCurrentLocation.getCountry().equals("United States")) {
-            mLocationLabel.setText(mCurrentLocation.getCity() + ", " + mCurrentLocation.getState());
+        // If abbreviation for state exists, uses it
+        // Else, uses the country name
+        if (CurrentLocation.STATES.containsKey(mCurrentLocation.getState())) {
+            mLocationLabel.setText(mCurrentLocation.getCity() + ", " +
+                    CurrentLocation.STATES.get(mCurrentLocation.getState()));
         } else {
-            mLocationLabel.setText(mCurrentLocation.getCity() + ", " + mCurrentLocation.getCountry());
+            mLocationLabel.setText(mCurrentLocation.getCity() + ", " +
+                    mCurrentLocation.getCountry());
         }
-
-
 
         Drawable drawable = ContextCompat.getDrawable(this, mCurrentWeather.getIconId());
         mIconImageView.setImageDrawable(drawable);
     }
 
-
+    /**
+     * This function takes the the JSON data retrieved from forecast.io's API and
+     * stores the necessary info on a CurrentWeather Object that is to be returned
+     *
+     * @param jsonData the data retrieved from forecast.io's API; contains weather data
+     * @return a CurrentWeather Object that holds current weather info such as temp, time, etc.
+     * @throws JSONException
+     */
     private CurrentWeather getCurrentDetails(String jsonData) throws JSONException {
         JSONObject forecast = new JSONObject(jsonData);
         String timezone = forecast.getString("timezone");
@@ -267,6 +304,14 @@ public class MainActivity extends AppCompatActivity implements LocationProvider.
     public void handleNewLocation(Location location) {
         double latitude = location.getLatitude();
         double longitude = location.getLongitude();
-        getForecast(latitude, longitude);
+
+        // Handles the new location by passing in the latitude/longitude to be used
+        // to make the http call. The retrieved data is used to update the display
+        try {
+            getForecast(latitude, longitude);
+        } catch (IOException e) {
+            Log.e(TAG, "Error occured: " + e);
+            e.printStackTrace();
+        }
     }
 }
