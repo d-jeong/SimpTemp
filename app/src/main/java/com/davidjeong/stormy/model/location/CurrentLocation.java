@@ -1,4 +1,4 @@
-package com.davidjeong.stormy.model;
+package com.davidjeong.stormy.model.location;
 
 import java.util.HashMap;
 import java.util.Map;

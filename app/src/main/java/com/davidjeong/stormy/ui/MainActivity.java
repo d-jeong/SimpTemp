@@ -17,11 +17,14 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.davidjeong.stormy.R;
-import com.davidjeong.stormy.model.AlertDialogFragment;
-import com.davidjeong.stormy.model.CurrentLocation;
-import com.davidjeong.stormy.model.CurrentWeather;
-import com.davidjeong.stormy.model.LocationProvider;
+import com.davidjeong.stormy.model.weather.Current;
+import com.davidjeong.stormy.model.location.CurrentLocation;
+import com.davidjeong.stormy.model.location.LocationProvider;
+import com.davidjeong.stormy.model.weather.Day;
+import com.davidjeong.stormy.model.weather.Forecast;
+import com.davidjeong.stormy.model.weather.Hour;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -41,7 +44,7 @@ public class MainActivity extends AppCompatActivity implements LocationProvider.
 
     public static final String TAG = MainActivity.class.getSimpleName();
 
-    private CurrentWeather mCurrentWeather;
+    private Forecast mForecast;
     private CurrentLocation mCurrentLocation;
     private LocationProvider mLocationProvider;
 
@@ -155,7 +158,7 @@ public class MainActivity extends AppCompatActivity implements LocationProvider.
                     if (response.isSuccessful()) {
                         try {
                             // parses the jsonData returned to store it into the data struct
-                            mCurrentWeather = getCurrentDetails(jsonData);
+                            mForecast = getForecastDetails(jsonData);
                         } catch (JSONException e) {
                             Log.e(TAG, "Error occured: " + e);
                             e.printStackTrace();
@@ -206,11 +209,13 @@ public class MainActivity extends AppCompatActivity implements LocationProvider.
      * that was retrieved through the http call
      */
     private void updateDisplay() {
-        mTemperatureLabel.setText(String.valueOf(mCurrentWeather.getTemperature()));
-        mTimeLabel.setText("At " + mCurrentWeather.getFormattedTime());
-        mHumidityValue.setText(String.valueOf(mCurrentWeather.getHumidity()));
-        mPrecipValue.setText(mCurrentWeather.getPrecipitation() + "%");
-        mSummaryLabel.setText("It is currently " + mCurrentWeather.getSummary().toLowerCase());
+        Current current = mForecast.getCurrent();
+
+        mTemperatureLabel.setText(String.valueOf(current.getTemperature()));
+        mTimeLabel.setText("At " + current.getFormattedTime());
+        mHumidityValue.setText(String.valueOf(current.getHumidity()));
+        mPrecipValue.setText(current.getPrecipitation() + "%");
+        mSummaryLabel.setText("It is currently " + current.getSummary().toLowerCase());
 
         // If abbreviation for state exists, uses it
         // Else, uses the country name
@@ -222,25 +227,87 @@ public class MainActivity extends AppCompatActivity implements LocationProvider.
                     mCurrentLocation.getCountry());
         }
 
-        Drawable drawable = ContextCompat.getDrawable(this, mCurrentWeather.getIconId());
+        Drawable drawable = ContextCompat.getDrawable(this, current.getIconId());
         mIconImageView.setImageDrawable(drawable);
+    }
+
+
+    private Forecast getForecastDetails(String jsonData) throws JSONException {
+        Current current = getCurrentDetails(jsonData);
+        Hour[] hourly = getHourlyDetails(jsonData);
+        Day[] daily = getDailyDetails(jsonData);
+
+        Forecast forecast = new Forecast(current, hourly, daily);
+
+        return forecast;
+    }
+
+
+    private Day[] getDailyDetails(String jsonData) throws JSONException {
+        JSONObject forecast = new JSONObject(jsonData);
+        String timezone = forecast.getString("timezone");
+
+        JSONObject daily = forecast.getJSONObject("daily");
+        JSONArray dailyData = daily.getJSONArray("data");
+
+        Day[] dailyWeather = new Day[dailyData.length()];
+
+        for (int i = 0; i < dailyData.length(); ++i) {
+            JSONObject JSONDay = dailyData.getJSONObject(i);
+            dailyWeather[i] = new Day(
+                    JSONDay.getString("icon"),
+                    JSONDay.getLong("time"),
+                    JSONDay.getDouble("temperatureMin"),
+                    JSONDay.getDouble("temperatureMax"),
+                    JSONDay.getDouble("precipProbability"),
+                    JSONDay.getString("summary"),
+                    timezone
+            );
+        }
+
+        return dailyWeather;
+    }
+
+
+    private Hour[] getHourlyDetails(String jsonData) throws JSONException {
+        JSONObject forecast = new JSONObject(jsonData);
+        String timezone = forecast.getString("timezone");
+
+        JSONObject hourly = forecast.getJSONObject("hourly");
+        JSONArray hourlyData = hourly.getJSONArray("data");
+
+        Hour[] hourlyWeather = new Hour[hourlyData.length()];
+
+        for (int i = 0; i < hourlyData.length(); ++i) {
+            JSONObject JSONHour = hourlyData.getJSONObject(i);
+            hourlyWeather[i] = new Hour(
+                    JSONHour.getString("icon"),
+                    JSONHour.getLong("time"),
+                    JSONHour.getDouble("temperature"),
+                    JSONHour.getDouble("precipProbability"),
+                    JSONHour.getString("summary"),
+                    timezone
+            );
+        }
+
+        return hourlyWeather;
     }
 
     /**
      * This function takes the the JSON data retrieved from forecast.io's API and
-     * stores the necessary info on a CurrentWeather Object that is to be returned
+     * stores the necessary info on a Current Object that is to be returned
      *
      * @param jsonData the data retrieved from forecast.io's API; contains weather data
-     * @return a CurrentWeather Object that holds current weather info such as temp, time, etc.
+     * @return a Current Object that holds current weather info such as temp, time, etc.
      * @throws JSONException
      */
-    private CurrentWeather getCurrentDetails(String jsonData) throws JSONException {
+    private Current getCurrentDetails(String jsonData) throws JSONException {
         JSONObject forecast = new JSONObject(jsonData);
         String timezone = forecast.getString("timezone");
 
         JSONObject currently = new JSONObject(forecast.getString("currently"));
 
-        CurrentWeather currentWeather = new CurrentWeather(
+        Current current = new Current(
                 currently.getString("icon"),
                 currently.getLong("time"),
                 currently.getDouble("temperature"),
@@ -250,7 +317,7 @@ public class MainActivity extends AppCompatActivity implements LocationProvider.
                 timezone
         );
 
-        return currentWeather;
+        return current;
     }
 
 

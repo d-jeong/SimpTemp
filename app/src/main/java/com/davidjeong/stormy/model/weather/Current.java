@@ -1,4 +1,4 @@
-package com.davidjeong.stormy.model;
+package com.davidjeong.stormy.model.weather;
 
 import com.davidjeong.stormy.R;
 
@@ -6,7 +6,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
 
-public class CurrentWeather {
+public class Current {
     private String mIcon;
     private long mTime;
     private double mTemperature;
@@ -16,8 +16,8 @@ public class CurrentWeather {
     private String mTimezone;
 
 
-    public CurrentWeather(String icon, long time, double temperature, double humidity,
-                          double precipitation, String summary, String timezone) {
+    public Current(String icon, long time, double temperature, double humidity,
+                   double precipitation, String summary, String timezone) {
         mIcon = icon;
         mTime = time;
         mTemperature = temperature;
