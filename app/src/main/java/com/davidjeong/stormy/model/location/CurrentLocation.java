@@ -120,4 +120,15 @@ public class CurrentLocation {
 
         return states;
     }
+
+    public String getLocation() {
+        // If abbreviation for state exists, uses it
+        // Else, uses the country name
+        if (STATES.containsKey(mState)) {
+            return mCity + ", " +STATES.get(mState);
+        }
+        else {
+           return mCity + ", " + mCountry;
+        }
+    }
 }

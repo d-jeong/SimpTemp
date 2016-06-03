@@ -9,6 +9,7 @@ import android.location.Location;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -224,23 +225,21 @@ public class MainActivity extends AppCompatActivity implements LocationProvider.
         mHumidityValue.setText(String.valueOf(current.getHumidity()));
         mPrecipValue.setText(current.getPrecipitation() + "%");
         mSummaryLabel.setText("It is currently " + current.getSummary().toLowerCase());
-
-        // If abbreviation for state exists, uses it
-        // Else, uses the country name
-        if (CurrentLocation.STATES.containsKey(mCurrentLocation.getState())) {
-            mLocationLabel.setText(mCurrentLocation.getCity() + ", " +
-                    CurrentLocation.STATES.get(mCurrentLocation.getState()));
-        }
-        else {
-            mLocationLabel.setText(mCurrentLocation.getCity() + ", " +
-                    mCurrentLocation.getCountry());
-        }
+        mLocationLabel.setText(mCurrentLocation.getLocation());
 
         Drawable drawable = ContextCompat.getDrawable(this, current.getIconId());
         mIconImageView.setImageDrawable(drawable);
     }
 
 
+    /**
+     * This function takes the data retrieved from forecast.io's API and returns the necessary info
+     * in the form of a Forecast Object
+     *
+     * @param jsonData the data retrieved from forecast.io's API; contains weather data
+     * @return Forecast Object that contains all the weather data (current, hourly, daily)
+     * @throws JSONException
+     */
     private Forecast getForecastDetails(String jsonData) throws JSONException {
         Current current = getCurrentDetails(jsonData);
         Hour[] hourly = getHourlyDetails(jsonData);
@@ -252,6 +251,15 @@ public class MainActivity extends AppCompatActivity implements LocationProvider.
     }
 
 
+    /**
+     * This function takes the JSON data retrieved from forecast.io's API and
+     * stores the necessary info on Day Objects that is to be stored into an array of Day
+     * Objects, which is returned at the end
+     *
+     * @param jsonData the data retrieved from forecast.io's API; contains weather data
+     * @return Day[] that holds daily weather info such as temp, time, etc.
+     * @throws JSONException
+     */
     private Day[] getDailyDetails(String jsonData) throws JSONException {
         JSONObject forecast = new JSONObject(jsonData);
         String timezone = forecast.getString("timezone");
@@ -278,6 +286,15 @@ public class MainActivity extends AppCompatActivity implements LocationProvider.
     }
 
 
+    /**
+     * This function takes the JSON data retrieved from forecast.io's API and
+     * stores the necessary info on Hour Objects that is to be stored into an array of Hour
+     * Objects, which is returned at the end
+     *
+     * @param jsonData the data retrieved from forecast.io's API; contains weather data
+     * @return Hour[] that holds current hourly info such as temp, time, etc.
+     * @throws JSONException
+     */
     private Hour[] getHourlyDetails(String jsonData) throws JSONException {
         JSONObject forecast = new JSONObject(jsonData);
         String timezone = forecast.getString("timezone");
@@ -303,11 +320,11 @@ public class MainActivity extends AppCompatActivity implements LocationProvider.
     }
 
     /**
-     * This function takes the the JSON data retrieved from forecast.io's API and
+     * This function takes the JSON data retrieved from forecast.io's API and
      * stores the necessary info on a Current Object that is to be returned
      *
      * @param jsonData the data retrieved from forecast.io's API; contains weather data
-     * @return a Current Object that holds current weather info such as temp, time, etc.
+     * @return Current Object that holds current weather info such as temp, time, etc.
      * @throws JSONException
      */
     private Current getCurrentDetails(String jsonData) throws JSONException {
@@ -376,13 +393,18 @@ public class MainActivity extends AppCompatActivity implements LocationProvider.
         mLocationProvider.disconnect();
     }
 
+    /**
+     * Handles the new location by passing in the latitude/longitude to be used
+     * to make the http call. The retrieved data is used to update the display
+     *
+     * @param location containing the current GPS coordinate
+     */
     @Override
     public void handleNewLocation(Location location) {
         double latitude = location.getLatitude();
         double longitude = location.getLongitude();
 
-        // Handles the new location by passing in the latitude/longitude to be used
-        // to make the http call. The retrieved data is used to update the display
+
         try {
             getForecast(latitude, longitude);
         }
@@ -392,10 +414,24 @@ public class MainActivity extends AppCompatActivity implements LocationProvider.
         }
     }
 
+
+    /**
+     * Starts the daily list activity when the "Daily" button is clicked.
+     * Sends the daily weather data via intent
+     *
+     * @param view
+     */
     @OnClick(R.id.dailyButton)
     public void startDailyActivity(View view) {
         Intent intent = new Intent(this, DailyActivity.class);
-        intent.putExtra(DAILY_FORECAST, mForecast.getDailyWeather());
+        if (mCurrentLocation == null) {
+            intent.putExtra("CurrentLocation", "Retrieving Data...");
+            intent.putExtra(DAILY_FORECAST, new Day[0]);
+        }
+        else {
+            intent.putExtra("CurrentLocation", mCurrentLocation.getLocation());
+            intent.putExtra(DAILY_FORECAST, mForecast.getDailyWeather());
+        }
         startActivity(intent);
     }
 }
