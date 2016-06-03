@@ -162,7 +162,8 @@ public class MainActivity extends AppCompatActivity implements LocationProvider.
                         try {
                             // parses the jsonData returned to store it into the data struct
                             mForecast = getForecastDetails(jsonData);
-                        } catch (JSONException e) {
+                        }
+                        catch (JSONException e) {
                             Log.e(TAG, "Error occured: " + e);
                             e.printStackTrace();
                         }
@@ -174,7 +175,8 @@ public class MainActivity extends AppCompatActivity implements LocationProvider.
                                 updateDisplay();
                             }
                         });
-                    } else {
+                    }
+                    else {
                         alertUserAboutResponseError();
                     }
 
@@ -186,7 +188,8 @@ public class MainActivity extends AppCompatActivity implements LocationProvider.
                     });
                 }
             });
-        } else {
+        }
+        else {
             alertUserAboutNetworkError();
         }
     }
@@ -200,7 +203,8 @@ public class MainActivity extends AppCompatActivity implements LocationProvider.
         if (mProgressBar.getVisibility() == View.INVISIBLE) {
             mProgressBar.setVisibility(View.VISIBLE);
             mRefreshImageView.setVisibility(View.INVISIBLE);
-        } else {
+        }
+        else {
             mProgressBar.setVisibility(View.INVISIBLE);
             mRefreshImageView.setVisibility(View.VISIBLE);
         }
@@ -225,7 +229,8 @@ public class MainActivity extends AppCompatActivity implements LocationProvider.
         if (CurrentLocation.STATES.containsKey(mCurrentLocation.getState())) {
             mLocationLabel.setText(mCurrentLocation.getCity() + ", " +
                     CurrentLocation.STATES.get(mCurrentLocation.getState()));
-        } else {
+        }
+        else {
             mLocationLabel.setText(mCurrentLocation.getCity() + ", " +
                     mCurrentLocation.getCountry());
         }
@@ -379,7 +384,8 @@ public class MainActivity extends AppCompatActivity implements LocationProvider.
         // to make the http call. The retrieved data is used to update the display
         try {
             getForecast(latitude, longitude);
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             Log.e(TAG, "Error occured: " + e);
             e.printStackTrace();
         }

@@ -34,7 +34,7 @@ public class Day {
      * @return time string in the form of "h:mm a" (EX: 5 PM)
      */
     public String getFormattedTime() {
-        SimpleDateFormat formatter = new SimpleDateFormat("MM-D");
+        SimpleDateFormat formatter = new SimpleDateFormat("MM/DD EEEE");
         formatter.setTimeZone(TimeZone.getTimeZone(mTimezone));
         Date dateTime = new Date(mTime * 1000);
         String timeString = formatter.format(dateTime);
@@ -54,24 +54,24 @@ public class Day {
         mSummary = summary;
     }
 
-    public double getTemperatureMin() {
-        return mTemperatureMin;
+    public int getTemperatureMin() {
+        return (int) Math.round(mTemperatureMin);
     }
 
     public void setTemperatureMin(double temperatureMin) {
         mTemperatureMin = temperatureMin;
     }
 
-    public double getTemperatureMax() {
-        return mTemperatureMax;
+    public int getTemperatureMax() {
+        return (int) Math.round(mTemperatureMax);
     }
 
     public void setTemperatureMax(double temperatureMax) {
         mTemperatureMax = temperatureMax;
     }
 
-    public double getPrecipitation() {
-        return mPrecipitation;
+    public int getPrecipitation() {
+        return (int) Math.round(mPrecipitation * 100);
     }
 
     public void setPrecipitation(double precipitation) {
@@ -80,6 +80,10 @@ public class Day {
 
     public String getIcon() {
         return mIcon;
+    }
+
+    public int getIconId() {
+        return Forecast.getIconId(mIcon);
     }
 
     public void setIcon(String icon) {

@@ -72,7 +72,8 @@ public class LocationProvider implements
         Location location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
         if (location == null) {
             LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
-        } else {
+        }
+        else {
             mLocationCallback.handleNewLocation(location);
         }
     }
@@ -99,11 +100,13 @@ public class LocationProvider implements
              * Thrown if Google Play services canceled the original
              * PendingIntent
              */
-            } catch (IntentSender.SendIntentException e) {
+            }
+            catch (IntentSender.SendIntentException e) {
                 // Log the error
                 e.printStackTrace();
             }
-        } else {
+        }
+        else {
             /*
              * If no resolution is available, display a dialog to the
              * user with the error.
