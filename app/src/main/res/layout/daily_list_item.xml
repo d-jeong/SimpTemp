@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                tools:background="@drawable/bg_gradient"
+                android:paddingLeft="8dp"
+                android:paddingRight="8dp"
+                android:paddingTop="4dp"
+                android:paddingBottom="4dp">
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/highCircleImageView"
+        android:src="@drawable/bg_temperature"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginBottom="2dp"/>
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/iconImageView"
+        android:src="@drawable/sleet"
+        android:layout_centerVertical="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/dayNameLabel"
+        android:textColor="#FFFFFFFF"
+        android:textSize="20sp"
+        tools:text="12/31 Wednesday"
+        android:layout_centerVertical="true"
+        android:layout_toRightOf="@+id/iconImageView"
+        android:layout_toEndOf="@+id/iconImageView"
+        android:paddingLeft="4dp"/>
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/lowCircleImageView"
+        android:src="@drawable/bg_temperature"
+        android:layout_below="@+id/highCircleImageView"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Precipitaion:"
+        android:id="@+id/precipLabel"
+        android:textColor="#80FFFFFF"
+        android:layout_alignBottom="@+id/highCircleImageView"
+        android:layout_toLeftOf="@+id/highCircleImageView"
+        android:layout_toStartOf="@+id/highCircleImageView"
+        android:layout_marginRight="10dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/precipValue"
+        tools:text="100%"
+        android:layout_alignTop="@+id/lowCircleImageView"
+        android:layout_alignLeft="@+id/precipLabel"
+        android:layout_alignRight="@+id/precipLabel"
+        android:gravity="center"
+        android:textColor="#FFFFFFFF"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        tools:text="108"
+        android:id="@+id/temperatureHighLabel"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="false"
+        android:layout_alignTop="@+id/highCircleImageView"
+        android:layout_alignLeft="@+id/highCircleImageView"
+        android:layout_alignBottom="@+id/highCircleImageView"
+        android:layout_alignRight="@+id/highCircleImageView"
+        android:gravity="center"
+        android:textColor="#70BFD6"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        tools:text="-18"
+        android:id="@+id/temperatureLowLabel"
+        android:layout_below="@+id/highCircleImageView"
+        android:layout_alignTop="@+id/lowCircleImageView"
+        android:layout_alignLeft="@+id/lowCircleImageView"
+        android:layout_alignBottom="@+id/lowCircleImageView"
+        android:layout_alignRight="@+id/lowCircleImageView"
+        android:gravity="center"
+        android:textColor="#70BFD6"/>
+</RelativeLayout>

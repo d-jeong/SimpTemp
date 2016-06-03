@@ -1,6 +1,7 @@
 package com.davidjeong.stormy.ui;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.location.Address;
 import android.location.Geocoder;
@@ -34,6 +35,7 @@ import java.util.Locale;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.OkHttpClient;
@@ -68,6 +70,7 @@ public class MainActivity extends AppCompatActivity implements LocationProvider.
     @BindView(R.id.progressBar)
     ProgressBar mProgressBar;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -101,7 +104,7 @@ public class MainActivity extends AppCompatActivity implements LocationProvider.
      * data on the main activity layout. If network is not available, it sends an error message
      * to the user.
      *
-     * @param latitude double that represents latitude
+     * @param latitude  double that represents latitude
      * @param longitude double that represents longitude
      * @throws IOException
      */
@@ -113,7 +116,7 @@ public class MainActivity extends AppCompatActivity implements LocationProvider.
         Geocoder gcd = new Geocoder(this, Locale.getDefault());
 
         List<Address> addresses = gcd.getFromLocation(latitude, longitude, 1);
-        String city =  addresses.get(0).getLocality();
+        String city = addresses.get(0).getLocality();
         String state = addresses.get(0).getAdminArea();
         String country = addresses.get(0).getCountryName();
         mCurrentLocation = new CurrentLocation(latitude, longitude, city, state, country);
@@ -380,5 +383,11 @@ public class MainActivity extends AppCompatActivity implements LocationProvider.
             Log.e(TAG, "Error occured: " + e);
             e.printStackTrace();
         }
+    }
+
+    @OnClick(R.id.dailyButton)
+    public void startDailyActivity(View view) {
+        Intent intent = new Intent(this, DailyActivity.class);
+        startActivity(intent);
     }
 }
