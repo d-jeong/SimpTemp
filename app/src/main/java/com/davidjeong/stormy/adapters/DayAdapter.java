@@ -15,6 +15,7 @@ public class DayAdapter extends BaseAdapter {
 
     private Context mContext;
     private Day[] mDays;
+    private final char degree = '\u00B0';
 
     public DayAdapter(Context context, Day[] days) {
         mContext = context;
@@ -48,7 +49,7 @@ public class DayAdapter extends BaseAdapter {
             holder.iconImageView = (ImageView) convertView.findViewById(R.id.iconImageView);
             holder.temperatureHighLabel = (TextView) convertView.findViewById(R.id.temperatureHighLabel);
             holder.temperatureLowLabel = (TextView) convertView.findViewById(R.id.temperatureLowLabel);
-            holder.precipLabel = (TextView) convertView.findViewById(R.id.precipLabel);
+            holder.precipValue = (TextView) convertView.findViewById(R.id.precipValue);
             holder.dayLabel = (TextView) convertView.findViewById(R.id.dayLabel);
 
             convertView.setTag(holder);
@@ -60,9 +61,9 @@ public class DayAdapter extends BaseAdapter {
         Day day = mDays[position];
 
         holder.iconImageView.setImageResource(day.getIconId());
-        holder.temperatureHighLabel.setText(day.getTemperatureMax());
-        holder.temperatureLowLabel.setText(day.getTemperatureMin());
-        holder.precipLabel.setText(day.getPrecipitation() + "%");
+        holder.temperatureHighLabel.setText(String.valueOf(day.getTemperatureMax()) + degree);
+        holder.temperatureLowLabel.setText(String.valueOf(day.getTemperatureMin()) + degree);
+        holder.precipValue.setText(day.getPrecipitation() + "%");
         holder.dayLabel.setText(day.getFormattedTime());
 
         return convertView;
@@ -73,7 +74,7 @@ public class DayAdapter extends BaseAdapter {
         ImageView iconImageView;
         TextView temperatureLowLabel;
         TextView temperatureHighLabel;
-        TextView precipLabel;
+        TextView precipValue;
         TextView dayLabel;
     }
 }

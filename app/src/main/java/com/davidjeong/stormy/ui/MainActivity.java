@@ -45,6 +45,7 @@ import okhttp3.Response;
 public class MainActivity extends AppCompatActivity implements LocationProvider.LocationCallback {
 
     public static final String TAG = MainActivity.class.getSimpleName();
+    public static final String DAILY_FORECAST = "DAILY_FORECAST";
 
     private Forecast mForecast;
     private CurrentLocation mCurrentLocation;
@@ -394,6 +395,7 @@ public class MainActivity extends AppCompatActivity implements LocationProvider.
     @OnClick(R.id.dailyButton)
     public void startDailyActivity(View view) {
         Intent intent = new Intent(this, DailyActivity.class);
+        intent.putExtra(DAILY_FORECAST, mForecast.getDailyWeather());
         startActivity(intent);
     }
 }

@@ -1,10 +1,13 @@
 package com.davidjeong.stormy.model.weather;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
 
-public class Day {
+public class Day implements Parcelable {
     private String mIcon;
     private long mTime;
     private double mTemperatureMin;
@@ -31,10 +34,10 @@ public class Day {
      * This function uses the UNIX timestamp stored in this object to form a
      * human-readable time
      *
-     * @return time string in the form of "h:mm a" (EX: 5 PM)
+     * @return time string in the form of "MM/DD EEEE" (EX: 06/01 Wednesday)
      */
     public String getFormattedTime() {
-        SimpleDateFormat formatter = new SimpleDateFormat("MM/DD EEEE");
+        SimpleDateFormat formatter = new SimpleDateFormat("MM/d EEE");
         formatter.setTimeZone(TimeZone.getTimeZone(mTimezone));
         Date dateTime = new Date(mTime * 1000);
         String timeString = formatter.format(dateTime);
@@ -97,4 +100,44 @@ public class Day {
     public void setTimezone(String timezone) {
         mTimezone = timezone;
     }
+
+    // makes the Day object parcelable
+    @Override
+    public int describeContents() {
+        // unused
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(mIcon);
+        dest.writeLong(mTime);
+        dest.writeDouble(mTemperatureMax);
+        dest.writeDouble(mTemperatureMin);
+        dest.writeDouble(mPrecipitation);
+        dest.writeString(mSummary);
+        dest.writeString(mTimezone);
+    }
+
+    private Day(Parcel in) {
+        mIcon = in.readString();
+        mTime = in.readLong();
+        mTemperatureMax = in.readDouble();
+        mTemperatureMin = in.readDouble();
+        mPrecipitation = in.readDouble();
+        mSummary = in.readString();
+        mTimezone = in.readString();
+    }
+
+    public static final Creator<Day> CREATOR = new Creator<Day>() {
+        @Override
+        public Day createFromParcel(Parcel source) {
+            return new Day(source);
+        }
+
+        @Override
+        public Day[] newArray(int size) {
+            return new Day[size];
+        }
+    };
 }
