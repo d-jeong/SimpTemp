@@ -122,13 +122,24 @@ public class CurrentLocation {
     }
 
     public String getLocation() {
-        // If abbreviation for state exists, uses it
-        // Else, uses the country name
+        // If abbreviation for state exists, return location with the abbreviated state name
+        // Else, return location with the country name
         if (STATES.containsKey(mState)) {
-            return mCity + ", " +STATES.get(mState);
+            return mCity + ", " + STATES.get(mState);
         }
         else {
            return mCity + ", " + mCountry;
+        }
+    }
+
+    public String getStateAbbreviation() {
+        // If abbreviation for state exists, return the state abbreviation
+        // Else, return the country name
+        if (STATES.containsKey(mState)) {
+            return STATES.get(mState);
+        }
+        else {
+            return mCountry;
         }
     }
 }

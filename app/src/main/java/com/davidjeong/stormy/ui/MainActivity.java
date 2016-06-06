@@ -2,6 +2,8 @@ package com.davidjeong.stormy.ui;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.location.Address;
 import android.location.Geocoder;
@@ -9,7 +11,6 @@ import android.location.Location;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -19,9 +20,9 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.davidjeong.stormy.R;
-import com.davidjeong.stormy.model.weather.Current;
 import com.davidjeong.stormy.model.location.CurrentLocation;
 import com.davidjeong.stormy.model.location.LocationProvider;
+import com.davidjeong.stormy.model.weather.Current;
 import com.davidjeong.stormy.model.weather.Day;
 import com.davidjeong.stormy.model.weather.Forecast;
 import com.davidjeong.stormy.model.weather.Hour;
@@ -47,30 +48,22 @@ public class MainActivity extends AppCompatActivity implements LocationProvider.
 
     public static final String TAG = MainActivity.class.getSimpleName();
     public static final String DAILY_FORECAST = "DAILY_FORECAST";
+    public static final String HOURLY_FORECAST = "HOURLY_FORECAST";
 
     private Forecast mForecast;
     private CurrentLocation mCurrentLocation;
     private LocationProvider mLocationProvider;
 
     // Butter Knife for boiler-plate code
-    @BindView(R.id.locationLabel)
-    TextView mLocationLabel;
-    @BindView(R.id.timeLabel)
-    TextView mTimeLabel;
-    @BindView(R.id.temperatureLabel)
-    TextView mTemperatureLabel;
-    @BindView(R.id.humidityValue)
-    TextView mHumidityValue;
-    @BindView(R.id.precipValue)
-    TextView mPrecipValue;
-    @BindView(R.id.summaryLabel)
-    TextView mSummaryLabel;
-    @BindView(R.id.iconImageView)
-    ImageView mIconImageView;
-    @BindView(R.id.refreshImageView)
-    ImageView mRefreshImageView;
-    @BindView(R.id.progressBar)
-    ProgressBar mProgressBar;
+    @BindView(R.id.locationLabel) TextView mLocationLabel;
+    @BindView(R.id.timeLabel) TextView mTimeLabel;
+    @BindView(R.id.temperatureLabel) TextView mTemperatureLabel;
+    @BindView(R.id.humidityValue) TextView mHumidityValue;
+    @BindView(R.id.precipValue) TextView mPrecipValue;
+    @BindView(R.id.summaryLabel) TextView mSummaryLabel;
+    @BindView(R.id.iconImageView) ImageView mIconImageView;
+    @BindView(R.id.refreshImageView) ImageView mRefreshImageView;
+    @BindView(R.id.progressBar) ProgressBar mProgressBar;
 
 
     @Override
@@ -81,6 +74,7 @@ public class MainActivity extends AppCompatActivity implements LocationProvider.
 
         // progress bar should only be visible on refresh
         mProgressBar.setVisibility(View.INVISIBLE);
+        mProgressBar.getIndeterminateDrawable().setColorFilter(Color.BLUE, PorterDuff.Mode.MULTIPLY);
 
         // initialize access to GPS (Google's Location Services)
         mLocationProvider = new LocationProvider(this, this);
@@ -225,7 +219,8 @@ public class MainActivity extends AppCompatActivity implements LocationProvider.
         mHumidityValue.setText(String.valueOf(current.getHumidity()));
         mPrecipValue.setText(current.getPrecipitation() + "%");
         mSummaryLabel.setText("It is currently " + current.getSummary().toLowerCase());
-        mLocationLabel.setText(mCurrentLocation.getLocation());
+        mLocationLabel.setText(mCurrentLocation.getCity() + ",\n" +
+                mCurrentLocation.getStateAbbreviation());
 
         Drawable drawable = ContextCompat.getDrawable(this, current.getIconId());
         mIconImageView.setImageDrawable(drawable);
@@ -424,13 +419,28 @@ public class MainActivity extends AppCompatActivity implements LocationProvider.
     @OnClick(R.id.dailyButton)
     public void startDailyActivity(View view) {
         Intent intent = new Intent(this, DailyActivity.class);
-        if (mCurrentLocation == null) {
+        if (mForecast == null) {
             intent.putExtra("CurrentLocation", "Retrieving Data...");
             intent.putExtra(DAILY_FORECAST, new Day[0]);
         }
         else {
             intent.putExtra("CurrentLocation", mCurrentLocation.getLocation());
             intent.putExtra(DAILY_FORECAST, mForecast.getDailyWeather());
+        }
+        startActivity(intent);
+    }
+
+
+    @OnClick(R.id.hourlyButton)
+    public void startHourlyActivity(View view) {
+        Intent intent = new Intent(this, HourlyActivity.class);
+        if (mForecast == null) {
+            intent.putExtra("CurrentLocation", "Retrieving Data...");
+            intent.putExtra(HOURLY_FORECAST, new Hour[0]);
+        }
+        else {
+            intent.putExtra("CurrentLocation", mCurrentLocation.getLocation());
+            intent.putExtra(HOURLY_FORECAST, mForecast.getHourlyWeather());
         }
         startActivity(intent);
     }

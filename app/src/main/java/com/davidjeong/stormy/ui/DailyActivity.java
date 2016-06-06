@@ -21,8 +21,7 @@ public class DailyActivity extends ListActivity {
 
     private Day[] mDays;
 
-    @BindView(R.id.locationLabel)
-    TextView locationLabel;
+    @BindView(R.id.locationLabel) TextView locationLabel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

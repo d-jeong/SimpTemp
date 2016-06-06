@@ -1,12 +1,13 @@
 package com.davidjeong.stormy.model.weather;
 
-import com.davidjeong.stormy.R;
+import android.os.Parcel;
+import android.os.Parcelable;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
 
-public class Hour {
+public class Hour implements Parcelable {
     private String mIcon;
     private long mTime;
     private double mTemperature;
@@ -55,16 +56,16 @@ public class Hour {
         mSummary = summary;
     }
 
-    public double getTemperature() {
-        return mTemperature;
+    public int getTemperature() {
+        return (int) Math.round(mTemperature);
     }
 
     public void setTemperature(double temperature) {
         mTemperature = temperature;
     }
 
-    public double getPrecipitation() {
-        return mPrecipitation;
+    public int getPrecipitation() {
+        return (int) Math.round(mPrecipitation * 100);
     }
 
     public void setPrecipitation(double precipitation) {
@@ -90,4 +91,43 @@ public class Hour {
     public void setTimezone(String timezone) {
         mTimezone = timezone;
     }
+
+
+    // makes the Hour object parcelable
+    @Override
+    public int describeContents() {
+        // unused
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(mIcon);
+        dest.writeLong(mTime);
+        dest.writeDouble(mTemperature);
+        dest.writeDouble(mPrecipitation);
+        dest.writeString(mSummary);
+        dest.writeString(mTimezone);
+    }
+
+    private Hour(Parcel in) {
+        mIcon = in.readString();
+        mTime = in.readLong();
+        mTemperature = in.readDouble();
+        mPrecipitation = in.readDouble();
+        mSummary = in.readString();
+        mTimezone = in.readString();
+    }
+
+    public static final Creator<Hour> CREATOR = new Creator<Hour>() {
+        @Override
+        public Hour createFromParcel(Parcel source) {
+            return new Hour(source);
+        }
+
+        @Override
+        public Hour[] newArray(int size) {
+            return new Hour[size];
+        }
+    };
 }
